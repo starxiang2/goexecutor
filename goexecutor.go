@@ -1,6 +1,7 @@
 package goexecutor
 
 import (
+    "context"
     "errors"
     "sync"
 )
@@ -37,12 +38,12 @@ type goroutineControl struct {
     wg           *sync.WaitGroup
 }
 
-func (c *goroutineControl) Work(param map[string]any, f func(param map[string]any)) {
+func (c *goroutineControl) Work(ctx context.Context, f func(ctx context.Context)) {
     c.Add()
-    go func(c *goroutineControl, param map[string]any, fu func(param map[string]any)) {
+    go func(c *goroutineControl, ctx context.Context, fu func(ctx context.Context)) {
         defer c.Done()
-        fu(param)
-    }(c, param, f)
+        fu(ctx)
+    }(c, ctx, f)
 }
 
 func (c *goroutineControl) Add() {
