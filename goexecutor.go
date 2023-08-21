@@ -38,17 +38,17 @@ type goroutineControl struct {
     wg           *sync.WaitGroup
 }
 
-func (c *goroutineControl) Work(ctx context.Context, f func(ctx context.Context)) {
-    c.Add()
+func (g *goroutineControl) Work(ctx context.Context, f func(ctx context.Context)) {
+    g.Add()
     go func(c *goroutineControl, ctx context.Context, fu func(ctx context.Context)) {
         defer c.Done()
         fu(ctx)
-    }(c, ctx, f)
+    }(g, ctx, f)
 }
 
-func (c *goroutineControl) Add() {
-    c.wg.Add(1)
-    c.GoroutineNum <- struct{}{}
+func (g *goroutineControl) Add() {
+    g.wg.Add(1)
+    g.GoroutineNum <- struct{}{}
     if maxGoroutineNum > 0 {
         maxGoroutine <- struct{}{}
     }
@@ -58,16 +58,16 @@ func (c *goroutineControl) GetCurrentGoroutineCount() int {
     return len(c.GoroutineNum)
 }
 
-func (c *goroutineControl) Done() {
-    <-c.GoroutineNum
+func (g *goroutineControl) Done() {
+    <-g.GoroutineNum
     if maxGoroutineNum > 0 {
         <-maxGoroutine
     }
-    c.wg.Done()
+    g.wg.Done()
 }
 
-func (c *goroutineControl) Wait() {
-    c.wg.Wait()
+func (g *goroutineControl) Wait() {
+    g.wg.Wait()
 }
 
 func New(goroutineNum uint16) *goroutineControl {
